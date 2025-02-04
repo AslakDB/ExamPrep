@@ -11,7 +11,7 @@ void UGAS_Punch::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const 
 	UE_LOG(LogTemp,Display, TEXT("Punch Ability Activated"));
 	if (ACharacter* Character = Cast<ACharacter>(ActorInfo->AvatarActor.Get()))
 	{
-		Character->Jump();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Punch Ability Activated"));
 	}
 	EndAbility( Handle, ActorInfo, ActivationInfo, true, false);
 }

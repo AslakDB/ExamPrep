@@ -95,35 +95,66 @@ void AGAS_TESTCharacter::NotifyControllerChanged()
 
 void AGAS_TESTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+    if (!PlayerInputComponent)
+    {
+        UE_LOG(LogTemplateCharacter, Error, TEXT("PlayerInputComponent is null"));
+        return;
+    }
 
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGAS_TESTCharacter::Move);
+    // Set up action bindings
+    if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    {
+        // Jumping
+        if (JumpAction)
+        {
+            EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+            EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+        }
+        else
+        {
+            UE_LOG(LogTemplateCharacter, Error, TEXT("JumpAction is null"));
+        }
 
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGAS_TESTCharacter::Look);
+        // Moving
+        if (MoveAction)
+        {
+            EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGAS_TESTCharacter::Move);
+        }
+        else
+        {
+            UE_LOG(LogTemplateCharacter, Error, TEXT("MoveAction is null"));
+        }
 
-		//Ensure the AbilitySystemComponent is initialized
-		if (AbilitySystemComponent)
-		{
-			// Bind the ability input actions
-			AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds(
-				"Confirm",
-				"Cancel",
-				"AbilityInput",
-				static_cast<int32>(EGASAbilityInputID::Confirm),
-				static_cast<int32>(EGASAbilityInputID::Cancel)));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
+        // Looking
+        if (LookAction)
+        {
+            EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGAS_TESTCharacter::Look);
+        }
+        else
+        {
+            UE_LOG(LogTemplateCharacter, Error, TEXT("LookAction is null"));
+        }
+
+        // Ensure the AbilitySystemComponent is initialized
+        if (AbilitySystemComponent && PlayerInputComponent)
+        {
+            // Bind the ability input actions
+            AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds(
+                "Confirm",
+                "Cancel",
+                "EGASAbilityInputID",
+                static_cast<int32>(EGASAbilityInputID::Confirm),
+                static_cast<int32>(EGASAbilityInputID::Cancel)));
+        }
+        else
+        {
+            UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Ability System component! This template is built to use the Ability System component. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+    }
 }
 
 void AGAS_TESTCharacter::Move(const FInputActionValue& Value)
